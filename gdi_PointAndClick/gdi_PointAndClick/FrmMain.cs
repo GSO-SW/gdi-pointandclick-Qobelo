@@ -1,10 +1,14 @@
-using System.Collections.Generic; // benötigt für Listen
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gdi_PointAndClick
 {
     public partial class FrmMain : Form
     {
-        List<Rectangle> rectangles = new List<Rectangle>();
+        private List<Rectangle> rectangles = new List<Rectangle>();
+        private Random random = new Random();
 
         public FrmMain()
         {
@@ -14,31 +18,42 @@ namespace gdi_PointAndClick
 
         private void FrmMain_Paint(object sender, PaintEventArgs e)
         {
-            // Hilfsvarablen
             Graphics g = e.Graphics;
-            int w = this.ClientSize.Width;
-            int h = this.ClientSize.Height;
+            Brush b;
 
-            // Zeichenmittel
-            Brush b = new SolidBrush(Color.Lavender);
-
-
-            for (int i = 0; i < rectangles.Count; i++)
+            foreach (Rectangle rect in rectangles)
             {
-                g.FillRectangle(b, rectangles[i]);
+                b = new SolidBrush(Color.FromArgb(random.Next(256), random.Next(256), random.Next(256)));
+                g.FillRectangle(b, rect);
             }
-
         }
 
         private void FrmMain_MouseClick(object sender, MouseEventArgs e)
         {
-            Point mausposition = e.Location;
+            Point mousePosition = e.Location;
 
-            Rectangle r = new Rectangle(mausposition.X, mausposition.Y, 40, 40);
+            if (!IsPointInsideRectangles(mousePosition))
+            {
+                int size = random.Next(20, 100);
+                int halfSize = size / 2;
 
-            rectangles.Add(r);  // Kurze Variante: rectangles.Add( new Rectangle(...)  );
+                Rectangle newRect = new Rectangle(mousePosition.X - halfSize, mousePosition.Y - halfSize, size, size);
+                rectangles.Add(newRect);
 
-            Refresh();
+                Refresh();
+            }
+        }
+
+        private bool IsPointInsideRectangles(Point point)
+        {
+            foreach (Rectangle rect in rectangles)
+            {
+                if (rect.Contains(point))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void FrmMain_KeyDown(object sender, KeyEventArgs e)
